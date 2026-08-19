@@ -1,5 +1,3 @@
-package Tareas;
-
 import java.util.Scanner;
 import java.util.Random;
 
@@ -38,7 +36,7 @@ public class Estacionamiento {
                     break;
 
                 case 2:
-                    System.out.println("Retiro se agregara en el Commit 3.");
+                    System.out.println("Retiro: se agregara en el siguiente commit.");
                     break;
 
                 case 3:
@@ -46,11 +44,11 @@ public class Estacionamiento {
                     break;
 
                 case 4:
-                    System.out.println("Busqueda se agregara en el Commit 3.");
+                    System.out.println("Busqueda: se agregara en el siguiente commit.");
                     break;
 
                 case 5:
-                    System.out.println("Ruta se agregara en el Commit 4.");
+                    System.out.println("Ruta: se agregara en el siguiente commit.");
                     break;
 
                 case 6:
@@ -70,12 +68,12 @@ public class Estacionamiento {
 
     static void menu() {
 
-        System.out.println("\n===== ESTACIONAMIENTO =====");
+        System.out.println("\n===== SISTEMA DE ESTACIONAMIENTO =====");
         System.out.println("1. Ingresar vehiculo");
         System.out.println("2. Retirar vehiculo");
         System.out.println("3. Mostrar estacionamiento");
         System.out.println("4. Buscar vehiculo");
-        System.out.println("5. Ruta mas corta");
+        System.out.println("5. Mostrar ruta mas corta");
         System.out.println("6. Mostrar ingresos");
         System.out.println("7. Salir");
     }
@@ -177,7 +175,6 @@ public class Estacionamiento {
         }
 
         if (!tablero[fila][columna].equals("L")) {
-
             System.out.println("El espacio esta ocupado.");
             return;
         }
@@ -268,9 +265,6 @@ public class Estacionamiento {
 
         System.out.println("\n  1 2 3 4 5 6 7 8");
 
-        int libres = 0;
-        int ocupados = 0;
-
         for (int f = 0; f < 10; f++) {
 
             if (f >= 1 && f <= 8) {
@@ -280,25 +274,11 @@ public class Estacionamiento {
             }
 
             for (int c = 0; c < 10; c++) {
-
                 System.out.print(tablero[f][c] + " ");
-
-                if (f >= 1 && f <= 8 &&
-                    c >= 1 && c <= 8) {
-
-                    if (tablero[f][c].equals("L")) {
-                        libres++;
-                    } else {
-                        ocupados++;
-                    }
-                }
             }
 
             System.out.println();
         }
-
-        System.out.println("Libres: " + libres);
-        System.out.println("Ocupados: " + ocupados);
     }
 
     static void mostrarIngresos() {
