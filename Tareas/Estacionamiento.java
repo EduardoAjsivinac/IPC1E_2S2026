@@ -28,6 +28,7 @@ public class Estacionamiento {
         int opcion;
 
         do {
+
             menu();
             opcion = leerEntero("Seleccione una opcion: ");
 
@@ -38,7 +39,7 @@ public class Estacionamiento {
                     break;
 
                 case 2:
-                    System.out.println("Retiro se agregara en el Commit 3.");
+                    retirar();
                     break;
 
                 case 3:
@@ -46,7 +47,7 @@ public class Estacionamiento {
                     break;
 
                 case 4:
-                    System.out.println("Busqueda se agregara en el Commit 3.");
+                    buscar();
                     break;
 
                 case 5:
@@ -262,6 +263,59 @@ public class Estacionamiento {
         }
 
         return null;
+    }
+
+    static void retirar() {
+
+        System.out.print("Ingrese la placa: ");
+        String placa = sc.nextLine().trim();
+
+        if (!validarPlaca(placa)) {
+            System.out.println("Placa invalida.");
+            return;
+        }
+
+        int[] posicion = buscarPlaca(placa);
+
+        if (posicion == null) {
+
+            System.out.println("Vehiculo no encontrado.");
+            return;
+        }
+
+        int f = posicion[0];
+        int c = posicion[1];
+
+        placas[f][c] = null;
+        tablero[f + 1][c + 1] = "L";
+
+        System.out.println("Vehiculo retirado.");
+        System.out.println("Fila: " + (f + 1));
+        System.out.println("Columna: " + (c + 1));
+    }
+
+    static void buscar() {
+
+        System.out.print("Ingrese la placa: ");
+        String placa = sc.nextLine().trim();
+
+        if (!validarPlaca(placa)) {
+            System.out.println("Placa invalida.");
+            return;
+        }
+
+        int[] posicion = buscarPlaca(placa);
+
+        if (posicion == null) {
+
+            System.out.println("Vehiculo no encontrado.");
+
+        } else {
+
+            System.out.println("Vehiculo encontrado.");
+            System.out.println("Fila: " + (posicion[0] + 1));
+            System.out.println("Columna: " + (posicion[1] + 1));
+        }
     }
 
     static void mostrarTablero() {
