@@ -51,7 +51,7 @@ public class Estacionamiento {
                     break;
 
                 case 5:
-                    System.out.println("Ruta se agregara en el Commit 4.");
+                    ruta();
                     break;
 
                 case 6:
@@ -353,6 +353,44 @@ public class Estacionamiento {
 
         System.out.println("Libres: " + libres);
         System.out.println("Ocupados: " + ocupados);
+    }
+
+    static void ruta() {
+
+        int horario = (salida - entrada + 36) % 36;
+        int antihorario = (entrada - salida + 36) % 36;
+
+        System.out.println("\n===== RUTA =====");
+
+        System.out.println(
+            "Entrada: fila " +
+            (perimetro[entrada][0] + 1) +
+            ", columna " +
+            (perimetro[entrada][1] + 1)
+        );
+
+        System.out.println(
+            "Salida: fila " +
+            (perimetro[salida][0] + 1) +
+            ", columna " +
+            (perimetro[salida][1] + 1)
+        );
+
+        System.out.println("Ruta horario: " + horario);
+        System.out.println("Ruta antihorario: " + antihorario);
+
+        if (horario < antihorario) {
+
+            System.out.println("Ruta recomendada: horario.");
+
+        } else if (antihorario < horario) {
+
+            System.out.println("Ruta recomendada: antihorario.");
+
+        } else {
+
+            System.out.println("Las dos rutas tienen la misma distancia.");
+        }
     }
 
     static void mostrarIngresos() {
