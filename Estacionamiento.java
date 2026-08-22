@@ -1,123 +1,61 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * Sistema de estacionamiento de vehículos en consola (Java).
+ * Permite registrar automóviles, controlar espacios ocupados, retirar
+ * vehículos, buscar placas, mostrar el estado del estacionamiento,
+ * calcular la ruta más corta entre la entrada y la salida, y consultar
+ * los ingresos recaudados.
+ */
 public class Estacionamiento {
 
-    // Matriz principal de 10x10 para la representación visual
-    static char[][] tablero = new char[10][10];
-    
-    // Matriz paralela para almacenar las placas registradas en sus coordenadas
-    static String[][] placas = new String[10][10];
-    
-    // Matriz para guardar el tiempo de ingreso en milisegundos (System.currentTimeMillis())
-    static long[][] tiemposIngreso = new long[10][10];
+    // ===================== CONSTANTES =====================
+    static final int FILAS = 8;          // filas internas del estacionamiento
+    static final int COLUMNAS = 8;       // columnas internas del estacionamiento
+    static final double TARIFA = 10.00;  // tarifa fija por vehículo
 
-    // Variables globales para guardar la posición fija de Entrada (E) y Salida (S)
-    static int filaEntrada, colEntrada;
+    // ===================== ESTRUCTURAS DE DATOS =====================
+    static String[][] placas = new String[FILAS][COLUMNAS]; // null = espacio libre
+    static int espaciosOcupados = 0;
+
+    static int filaEntrada, colEntrada; // coordenadas sobre el tablero 10x10 (vía exterior)
     static int filaSalida, colSalida;
 
-    // Control del total recabado en el sistema
-    static double ingresosTotales = 0.0;
-    static final double TARIFA_POR_SEGUNDO = 0.50; // Q0.50 por segundo simulado
+    static int vehiculosCobrados = 0;
+    static double totalRecaudado = 0.0;
 
+    static Scanner sc = new Scanner(System.in);
+
+    // ===================== MAIN =====================
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        inicializarTablero();
+        generarEntradaSalida();
 
-        int opcion = 0;
+        int opcion;
         do {
             mostrarMenu();
-            System.out.print("Seleccione una opción: ");
+            opcion = leerEntero("Seleccione una opción: ");
 
-            if (scanner.hasNextInt()) {
-                opcion = scanner.nextInt();
-                scanner.nextLine(); // Limpiar el búfer
-
-                switch (opcion) {
-                    case 1:
-                        ingresarVehiculo(scanner);
-                        break;
-                    case 2:
-                        retirarVehiculo(scanner);
-                        break;
-                    case 3:
-                        mostrarTablero();
-                        break;
-                    case 4:
-                        buscarVehiculo(scanner);
-                        break;
-                    case 5:
-                        mostrarRutaMasCorta();
-                        break;
-                    case 6:
-                        mostrarIngresos();
-                        break;
-                    case 7:
-                        System.out.println("\n¡Gracias por usar el sistema de estacionamiento!");
-                        break;
-                    default:
-                        System.out.println("\n[Error] Opción no válida. Intente de nuevo.");
-                }
-            } else {
-                System.out.println("\n[Error] Entrada inválida. Ingrese un número.");
-                scanner.nextLine();
+            switch (opcion) {
+                case 1: ingresarVehiculo(); break;
+                case 2: retirarVehiculo(); break;
+                case 3: mostrarEstacionamiento(); break;
+                case 4: buscarVehiculoPorPlaca(); break;
+                case 5: mostrarRutaMasCorta(); break;
+                case 6: mostrarIngresos(); break;
+                case 7: System.out.println("Saliendo del sistema..."); break;
+                default: System.out.println("Opción inválida. Intente nuevamente.");
             }
+            System.out.println();
         } while (opcion != 7);
 
-        scanner.close();
+        sc.close();
     }
 
-    // Inicializa la matriz con vías '=', espacios libres 'L' y genera 'E' y 'S'
-    public static void inicializarTablero() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                if (i == 0 || i == 9 || j == 0 || j == 9) {
-                    tablero[i][j] = '='; // Vía exterior
-                } else {
-                    tablero[i][j] = 'L'; // Lugar libre interior
-                }
-            }
-        }
-        generarEntradaYSalida();
-    }
-
-    // Genera la Entrada (E) y Salida (S) en posiciones aleatorias de los bordes evitando esquinas
-    private static void generarEntradaYSalida() {
-        Random rand = new Random();
-
-        int[] posE = obtenerPosicionBordeAleatoria(rand);
-        filaEntrada = posE[0];
-        colEntrada = posE[1];
-        tablero[filaEntrada][colEntrada] = 'E';
-
-        do {
-            int[] posS = obtenerPosicionBordeAleatoria(rand);
-            filaSalida = posS[0];
-            colSalida = posS[1];
-        } while (filaSalida == filaEntrada && colSalida == colEntrada);
-
-        tablero[filaSalida][colSalida] = 'S';
-    }
-
-    private static int[] obtenerPosicionBordeAleatoria(Random rand) {
-        int lado = rand.nextInt(4); // 0: Arriba, 1: Abajo, 2: Izquierda, 3: Derecha
-        int pos = 1 + rand.nextInt(8); // Posiciones del 1 al 8 (evitando esquinas)
-
-        int fila = 0, col = 0;
-        switch (lado) {
-            case 0: fila = 0; col = pos; break;
-            case 1: fila = 9; col = pos; break;
-            case 2: fila = pos; col = 0; break;
-            case 3: fila = pos; col = 9; break;
-        }
-        return new int[]{fila, col};
-    }
-
-    // Despliega el menú principal de opciones
-    public static void mostrarMenu() {
-        System.out.println("\n===== SISTEMA DE ESTACIONAMIENTO =====");
+    static void mostrarMenu() {
+        System.out.println("===== SISTEMA DE ESTACIONAMIENTO =====");
         System.out.println("1. Ingresar vehículo");
         System.out.println("2. Retirar vehículo");
         System.out.println("3. Mostrar estacionamiento");
@@ -127,237 +65,314 @@ public class Estacionamiento {
         System.out.println("7. Salir");
     }
 
-    // Imprime la matriz actual en consola con coordenadas numeradas del 1 al 8
-    public static void mostrarTablero() {
-        System.out.println("\nE = Entrada       S = Salida       = = Vía exterior");
-        System.out.println("L = Lugar libre   A = Automóvil\n");
-
-        System.out.println("    1 2 3 4 5 6 7 8");
-
-        for (int i = 0; i < 10; i++) {
-            if (i >= 1 && i <= 8) {
-                System.out.print(i + " ");
-            } else {
-                System.out.print("  ");
+    // ===================== UTILIDADES DE LECTURA =====================
+    static int leerEntero(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String linea = sc.nextLine().trim();
+            try {
+                return Integer.parseInt(linea);
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Debe ingresar un número entero.");
             }
+        }
+    }
 
-            for (int j = 0; j < 10; j++) {
-                System.out.print(tablero[i][j] + " ");
+    static double leerDouble(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String linea = sc.nextLine().trim();
+            try {
+                return Double.parseDouble(linea);
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Debe ingresar un valor numérico.");
             }
-            System.out.println();
+        }
+    }
+
+    static String leerTexto(String mensaje) {
+        System.out.print(mensaje);
+        return sc.nextLine().trim();
+    }
+
+    // ===================== ENTRADA / SALIDA ALEATORIAS =====================
+    static void generarEntradaSalida() {
+        Random rand = new Random();
+        int[] pos1 = generarPosicionPerimetro(rand);
+        int[] pos2;
+        do {
+            pos2 = generarPosicionPerimetro(rand);
+        } while (pos2[0] == pos1[0] && pos2[1] == pos1[1]);
+
+        filaEntrada = pos1[0];
+        colEntrada = pos1[1];
+        filaSalida = pos2[0];
+        colSalida = pos2[1];
+    }
+
+    // Genera una posición aleatoria sobre la vía exterior del tablero 10x10,
+    // sin ubicarse en ninguna esquina.
+    static int[] generarPosicionPerimetro(Random rand) {
+        int fila, col;
+        do {
+            int lado = rand.nextInt(4); // 0=arriba,1=abajo,2=izquierda,3=derecha
+            switch (lado) {
+                case 0: fila = 1;  col = 1 + rand.nextInt(10); break;
+                case 1: fila = 10; col = 1 + rand.nextInt(10); break;
+                case 2: fila = 1 + rand.nextInt(10); col = 1;  break;
+                default: fila = 1 + rand.nextInt(10); col = 10; break;
+            }
+        } while (esEsquina(fila, col));
+        return new int[]{fila, col};
+    }
+
+    static boolean esEsquina(int fila, int col) {
+        return (fila == 1 || fila == 10) && (col == 1 || col == 10);
+    }
+
+    // ===================== OPCIÓN 1: INGRESAR VEHÍCULO =====================
+    static void ingresarVehiculo() {
+        System.out.println();
+        System.out.println("--- Ingresar vehículo ---");
+
+        if (espaciosOcupados >= FILAS * COLUMNAS) {
+            System.out.println("El estacionamiento está lleno. No se pueden ingresar más vehículos.");
+            return;
+        }
+
+        // --- Validación de placa ---
+        String placa;
+        while (true) {
+            placa = leerTexto("Ingrese la placa (formato P###LLL): ").toUpperCase();
+            if (!validarFormatoPlaca(placa)) {
+                System.out.println("Formato de placa inválido. Ejemplo válido: P401JZQ");
+                continue;
+            }
+            if (buscarPlaca(placa) != null) {
+                System.out.println("Esa placa ya se encuentra registrada en el estacionamiento.");
+                continue;
+            }
+            break;
+        }
+
+        // --- Validación de fila y columna ---
+        int fila, col;
+        while (true) {
+            fila = leerEntero("Fila (1-8): ");
+            col = leerEntero("Columna (1-8): ");
+            if (fila < 1 || fila > FILAS || col < 1 || col > COLUMNAS) {
+                System.out.println("Posición fuera de rango. Debe estar entre 1 y 8.");
+                continue;
+            }
+            if (placas[fila - 1][col - 1] != null) {
+                System.out.println("Ese espacio ya está ocupado. Elija otro.");
+                continue;
+            }
+            break;
+        }
+
+        // --- Cobro y cálculo de cambio ---
+        System.out.printf("Tarifa: Q%.2f%n", TARIFA);
+        double monto;
+        while (true) {
+            monto = leerDouble("Ingrese el monto entregado: Q");
+            if (monto < 0) {
+                System.out.println("El monto no puede ser negativo.");
+                continue;
+            }
+            if (monto < TARIFA) {
+                System.out.println("Pago insuficiente. Debe ingresar al menos Q" + String.format("%.2f", TARIFA));
+                continue;
+            }
+            break;
+        }
+
+        double cambio = monto - TARIFA;
+
+        // --- Registro del vehículo (solo después de completar el pago) ---
+        placas[fila - 1][col - 1] = placa;
+        espaciosOcupados++;
+        vehiculosCobrados++;
+        totalRecaudado += TARIFA;
+
+        System.out.printf("Cambio: Q%.2f%n", cambio);
+        System.out.println("Vehículo ingresado correctamente.");
+    }
+
+    static boolean validarFormatoPlaca(String placa) {
+        if (placa == null || placa.length() != 7) return false;
+        return placa.matches("P\\d{3}[A-Z]{3}");
+    }
+
+    // Devuelve un arreglo {fila, columna} (1-8) si encuentra la placa, o null si no existe.
+    static int[] buscarPlaca(String placa) {
+        for (int f = 0; f < FILAS; f++) {
+            for (int c = 0; c < COLUMNAS; c++) {
+                if (placa.equals(placas[f][c])) {
+                    return new int[]{f + 1, c + 1};
+                }
+            }
+        }
+        return null;
+    }
+
+    // ===================== OPCIÓN 2: RETIRAR VEHÍCULO =====================
+    static void retirarVehiculo() {
+        System.out.println();
+        System.out.println("--- Retirar vehículo ---");
+
+        String placa;
+        while (true) {
+            placa = leerTexto("Ingrese la placa del vehículo a retirar: ").toUpperCase();
+            if (!validarFormatoPlaca(placa)) {
+                System.out.println("Formato de placa inválido. Ejemplo válido: P401JZQ");
+                continue;
+            }
+            break;
+        }
+
+        int[] posicion = buscarPlaca(placa);
+        if (posicion == null) {
+            System.out.println("No se encontró un vehículo con esa placa.");
+            return;
+        }
+
+        System.out.println("Vehículo encontrado en fila " + posicion[0] + ", columna " + posicion[1] + ".");
+        placas[posicion[0] - 1][posicion[1] - 1] = null;
+        espaciosOcupados--;
+        System.out.println("Vehículo retirado correctamente.");
+        // Nota: los ingresos acumulados NO se modifican, ya que el pago se realizó al ingresar.
+    }
+
+    // ===================== OPCIÓN 3: MOSTRAR ESTACIONAMIENTO =====================
+    static void mostrarEstacionamiento() {
+        System.out.println();
+        System.out.println("E = Entrada   S = Salida   = = Vía exterior");
+        System.out.println("L = Lugar libre   A = Automóvil");
+        System.out.println();
+
+        System.out.print("    ");
+        for (int c = 1; c <= 10; c++) {
+            System.out.printf("%2d ", c);
         }
         System.out.println();
-    }
 
-    // Valida que la placa tenga el formato de 7 caracteres P####LLL (Ejemplo: P123ABC)
-    public static boolean esPlacaValida(String placa) {
-        if (placa == null || placa.length() != 7) return false;
-        if (placa.charAt(0) != 'P') return false;
-
-        for (int i = 1; i <= 3; i++) {
-            char c = placa.charAt(i);
-            if (c < '0' || c > '9') return false;
-        }
-
-        for (int i = 4; i <= 6; i++) {
-            char c = placa.charAt(i);
-            if (c < 'A' || c > 'Z') return false;
-        }
-
-        return true;
-    }
-
-    // Verifica si la placa ya fue registrada dentro del estacionamiento
-    public static boolean existePlaca(String placa) {
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                if (placas[i][j] != null && placas[i][j].equals(placa)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    // Opción 1: Módulo para estacinar un nuevo automóvil
-    public static void ingresarVehiculo(Scanner scanner) {
-        System.out.print("\nIngrese la placa del vehículo (Formato P####LLL): ");
-        String placa = scanner.nextLine().trim().toUpperCase();
-
-        if (!esPlacaValida(placa)) {
-            System.out.println("[Error] La placa no cumple con el formato válido (P####LLL).");
-            return;
-        }
-
-        if (existePlaca(placa)) {
-            System.out.println("[Error] El vehículo con la placa " + placa + " ya está dentro del estacionamiento.");
-            return;
-        }
-
-        System.out.print("Ingrese la fila para estacionar (1-8): ");
-        int fila = scanner.nextInt();
-        System.out.print("Ingrese la columna para estacionar (1-8): ");
-        int col = scanner.nextInt();
-        scanner.nextLine();
-
-        if (fila < 1 || fila > 8 || col < 1 || col > 8) {
-            System.out.println("[Error] Coordenadas fuera de rango. Deben ser del 1 al 8.");
-            return;
-        }
-
-        if (tablero[fila][col] != 'L') {
-            System.out.println("[Error] La ubicación especificada no está libre.");
-            return;
-        }
-
-        tablero[fila][col] = 'A';
-        placas[fila][col] = placa;
-        tiemposIngreso[fila][col] = System.currentTimeMillis();
-
-        System.out.println("\n[Éxito] Vehículo con placa " + placa + " registrado exitosamente.");
-    }
-
-    // Opción 2: Módulo para retirar un vehículo, calcular tiempo y generar recibo de cobro
-    public static void retirarVehiculo(Scanner scanner) {
-        System.out.print("\nIngrese la placa del vehículo a retirar: ");
-        String placa = scanner.nextLine().trim().toUpperCase();
-
-        int f = -1, c = -1;
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                if (placas[i][j] != null && placas[i][j].equals(placa)) {
-                    f = i;
-                    c = j;
-                    break;
-                }
-            }
-        }
-
-        if (f == -1) {
-            System.out.println("[Error] No se encontró ningún vehículo con la placa especificada.");
-            return;
-        }
-
-        long tiempoFin = System.currentTimeMillis();
-        long segundosTranscurridos = (tiempoFin - tiemposIngreso[f][c]) / 1000;
-        if (segundosTranscurridos < 1) segundosTranscurridos = 1; // Tarifa mínima de 1 segundo
-
-        double totalPagar = segundosTranscurridos * TARIFA_POR_SEGUNDO;
-        ingresosTotales += totalPagar;
-
-        // Liberar espacio
-        tablero[f][c] = 'L';
-        placas[f][c] = null;
-        tiemposIngreso[f][c] = 0;
-
-        System.out.println("\n===== RECIBO DE PAGO =====");
-        System.out.println("Placa: " + placa);
-        System.out.println("Tiempo estacionado: " + segundosTranscurridos + " segundos");
-        System.out.printf("Monto a pagar: Q%.2f\n", totalPagar);
-        System.out.println("==========================");
-    }
-
-    // Opción 4: Módulo de búsqueda por número de placa
-    public static void buscarVehiculo(Scanner scanner) {
-        System.out.print("\nIngrese la placa a buscar: ");
-        String placa = scanner.nextLine().trim().toUpperCase();
-
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                if (placas[i][j] != null && placas[i][j].equals(placa)) {
-                    System.out.println("\n[Encontrado] El vehículo con placa " + placa + " está en la posición (" + i + ", " + j + ").");
-                    return;
-                }
-            }
-        }
-
-        System.out.println("\n[No Encontrado] El vehículo con la placa " + placa + " no está en el estacionamiento.");
-    }
-
-    // Opción 5: Algoritmo Breadth-First Search (BFS) para calcular e imprimir la ruta más corta (E -> S)
-    public static void mostrarRutaMasCorta() {
-        boolean[][] visitado = new boolean[10][10];
-        int[][] padreFila = new int[10][10];
-        int[][] padreCol = new int[10][10];
-
-        Queue<int[]> cola = new LinkedList<>();
-        cola.add(new int[]{filaEntrada, colEntrada});
-        visitado[filaEntrada][colEntrada] = true;
-
-        int[] dFila = {-1, 1, 0, 0};
-        int[] dCol = {0, 0, -1, 1};
-
-        boolean encontrado = false;
-
-        while (!cola.isEmpty()) {
-            int[] actual = cola.poll();
-            int f = actual[0];
-            int c = actual[1];
-
-            if (f == filaSalida && c == colSalida) {
-                encontrado = true;
-                break;
-            }
-
-            for (int i = 0; i < 4; i++) {
-                int nf = f + dFila[i];
-                int nc = c + dCol[i];
-
-                if (nf >= 0 && nf < 10 && nc >= 0 && nc < 10) {
-                    if (!visitado[nf][nc] && tablero[nf][nc] != 'A') { // Los automóviles 'A' actúan como obstáculos
-                        visitado[nf][nc] = true;
-                        padreFila[nf][nc] = f;
-                        padreCol[nf][nc] = c;
-                        cola.add(new int[]{nf, nc});
-                    }
-                }
-            }
-        }
-
-        if (!encontrado) {
-            System.out.println("\n[Error] No hay una ruta disponible hacia la salida (bloqueada totalmente por automóviles).");
-            return;
-        }
-
-        // Crear copia del tablero para dibujar el camino sin alterar el tablero principal
-        char[][] copiaTablero = new char[10][10];
-        for (int i = 0; i < 10; i++) {
-            System.arraycopy(tablero[i], 0, copiaTablero[i], 0, 10);
-        }
-
-        int curF = filaSalida;
-        int curC = colSalida;
-
-        while (!(curF == filaEntrada && curC == colEntrada)) {
-            if (copiaTablero[curF][curC] != 'E' && copiaTablero[curF][curC] != 'S') {
-                copiaTablero[curF][curC] = '*'; // Marcador de la ruta
-            }
-            int pf = padreFila[curF][curC];
-            int pc = padreCol[curF][curC];
-            curF = pf;
-            curC = pc;
-        }
-
-        System.out.println("\n===== RUTA MÁS CORTA (E -> S) =====");
-        System.out.println("* = Camino más corto\n");
-        System.out.println("    1 2 3 4 5 6 7 8");
-        for (int i = 0; i < 10; i++) {
-            if (i >= 1 && i <= 8) {
-                System.out.print(i + " ");
-            } else {
-                System.out.print("  ");
-            }
-            for (int j = 0; j < 10; j++) {
-                System.out.print(copiaTablero[i][j] + " ");
+        for (int fila = 1; fila <= 10; fila++) {
+            System.out.printf("%2d  ", fila);
+            for (int col = 1; col <= 10; col++) {
+                System.out.printf("%2s ", obtenerSimboloCelda(fila, col));
             }
             System.out.println();
         }
+
+        int libres = (FILAS * COLUMNAS) - espaciosOcupados;
+        System.out.println();
+        System.out.println("Espacios libres: " + libres);
+        System.out.println("Espacios ocupados: " + espaciosOcupados);
     }
 
-    // Opción 6: Módulo para visualizar la recaudación total acumulada
-    public static void mostrarIngresos() {
-        System.out.println("\n===== REPORTE DE INGRESOS =====");
-        System.out.printf("Total recaudado acumulado: Q%.2f\n", ingresosTotales);
-        System.out.println("===============================");
+    // fila y col en escala 1-10 (todo el tablero, incluyendo vía exterior).
+    // La celda interior (fila 2-9, col 2-9) corresponde al índice interno 1-8.
+    static String obtenerSimboloCelda(int fila, int col) {
+        if (fila == filaEntrada && col == colEntrada) return "E";
+        if (fila == filaSalida && col == colSalida) return "S";
+        if (fila == 1 || fila == 10 || col == 1 || col == 10) return "=";
+        if (placas[fila - 2][col - 2] != null) return "A";
+        return "L";
+    }
+
+    // ===================== OPCIÓN 4: BUSCAR VEHÍCULO POR PLACA =====================
+    static void buscarVehiculoPorPlaca() {
+        System.out.println();
+        System.out.println("--- Buscar vehículo por placa ---");
+
+        String placa;
+        while (true) {
+            placa = leerTexto("Ingrese la placa: ").toUpperCase();
+            if (!validarFormatoPlaca(placa)) {
+                System.out.println("Formato de placa inválido. Ejemplo válido: P401JZQ");
+                continue;
+            }
+            break;
+        }
+
+        int[] posicion = buscarPlaca(placa);
+        if (posicion == null) {
+            System.out.println("Vehículo no encontrado.");
+        } else {
+            System.out.println("Vehículo encontrado.");
+            System.out.println("Fila: " + posicion[0]);
+            System.out.println("Columna: " + posicion[1]);
+        }
+    }
+
+    // ===================== OPCIÓN 5: RUTA MÁS CORTA =====================
+    static void mostrarRutaMasCorta() {
+        System.out.println();
+        System.out.println("--- Ruta más corta entre entrada y salida ---");
+
+        List<int[]> perimetro = construirPerimetro();
+
+        int idxEntrada = indiceEnPerimetro(perimetro, filaEntrada, colEntrada);
+        int idxSalida = indiceEnPerimetro(perimetro, filaSalida, colSalida);
+
+        int total = perimetro.size();
+        int horario = (idxSalida - idxEntrada + total) % total;
+        int antihorario = total - horario;
+
+        System.out.println("Entrada: fila " + filaEntrada + ", columna " + colEntrada);
+        System.out.println("Salida: fila " + filaSalida + ", columna " + colSalida);
+        System.out.println("Ruta sentido horario: " + horario + " posiciones");
+        System.out.println("Ruta sentido antihorario: " + antihorario + " posiciones");
+
+        if (horario < antihorario) {
+            System.out.println("Ruta recomendada: sentido horario (" + horario + " posiciones)");
+        } else if (antihorario < horario) {
+            System.out.println("Ruta recomendada: sentido antihorario (" + antihorario + " posiciones)");
+        } else {
+            System.out.println("Ambas rutas tienen la misma distancia (" + horario + " posiciones). Puede utilizar cualquiera.");
+        }
+    }
+
+    // Construye la lista de coordenadas de la vía exterior (perímetro del tablero 10x10)
+    // en sentido horario, comenzando en la esquina (1,1).
+    static List<int[]> construirPerimetro() {
+        List<int[]> perimetro = new ArrayList<>();
+
+        // fila 1, columnas 1 a 10 (borde superior)
+        for (int col = 1; col <= 10; col++) {
+            perimetro.add(new int[]{1, col});
+        }
+        // columna 10, filas 2 a 10 (borde derecho)
+        for (int fila = 2; fila <= 10; fila++) {
+            perimetro.add(new int[]{fila, 10});
+        }
+        // fila 10, columnas 9 a 1 (borde inferior)
+        for (int col = 9; col >= 1; col--) {
+            perimetro.add(new int[]{10, col});
+        }
+        // columna 1, filas 9 a 2 (borde izquierdo)
+        for (int fila = 9; fila >= 2; fila--) {
+            perimetro.add(new int[]{fila, 1});
+        }
+
+        return perimetro;
+    }
+
+    static int indiceEnPerimetro(List<int[]> perimetro, int fila, int col) {
+        for (int i = 0; i < perimetro.size(); i++) {
+            int[] p = perimetro.get(i);
+            if (p[0] == fila && p[1] == col) return i;
+        }
+        return -1; // no debería ocurrir
+    }
+
+    // ===================== OPCIÓN 6: MOSTRAR INGRESOS =====================
+    static void mostrarIngresos() {
+        System.out.println();
+        System.out.println("===== INGRESOS =====");
+        System.out.println("Vehículos cobrados: " + vehiculosCobrados);
+        System.out.printf("Tarifa por vehículo: Q%.2f%n", TARIFA);
+        System.out.printf("Total recaudado: Q%.2f%n", totalRecaudado);
     }
 }
