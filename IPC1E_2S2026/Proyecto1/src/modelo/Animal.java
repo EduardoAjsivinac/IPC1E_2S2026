@@ -1,4 +1,4 @@
-package modelo;
+package IPC1E_2S2026.Proyecto1.src.modelo;
 
 public class Animal {
     private String codigo;        // Formato: "A-001"
