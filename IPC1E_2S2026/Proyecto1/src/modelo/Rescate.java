@@ -1,33 +1,47 @@
 package IPC1E_2S2026.Proyecto1.src.modelo;
 
 public class Rescate {
-    private String codigo;               // Formato: "R-001"
-    private String prioridad;            // "ALTA", "MEDIA", "BAJA"
-    private String estado;               // "PENDIENTE", "ATENDIDO"
-    private String fechaReporte;         // Formato: "dd/mm/aaaa"
-    private String codigoAnimalVinculado; // Código del animal asignado ("A-001")
+    private String codigo;
+    private String lugar;
+    private String fecha;
+    private String codigoAnimal;
 
-    public Rescate(String codigo, String prioridad, String estado, String fechaReporte, String codigoAnimalVinculado) {
+    public Rescate(String codigo, String lugar, String fecha, String codigoAnimal) {
         this.codigo = codigo;
-        this.prioridad = prioridad;
-        this.estado = estado;
-        this.fechaReporte = fechaReporte;
-        this.codigoAnimalVinculado = codigoAnimalVinculado;
+        this.lugar = lugar;
+        this.fecha = fecha;
+        this.codigoAnimal = codigoAnimal;
     }
 
-    // Getters y Setters
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getCodigo() {
+        return codigo;
+    }
 
-    public String getPrioridad() { return prioridad; }
-    public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public String getLugar() {
+        return lugar;
+    }
 
-    public String getFechaReporte() { return fechaReporte; }
-    public void setFechaReporte(String fechaReporte) { this.fechaReporte = fechaReporte; }
+    public void setLugar(String lugar) {
+        this.lugar = lugar;
+    }
 
-    public String getCodigoAnimalVinculado() { return codigoAnimalVinculado; }
-    public void setCodigoAnimalVinculado(String codigoAnimalVinculado) { this.codigoAnimalVinculado = codigoAnimalVinculado; }
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
+    public String getCodigoAnimal() {
+        return codigoAnimal;
+    }
+
+    public void setCodigoAnimal(String codigoAnimal) {
+        this.codigoAnimal = codigoAnimal;
+    }
 }
