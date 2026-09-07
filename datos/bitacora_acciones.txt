@@ -1,0 +1,7 @@
+05/09/2026 19:04|admin1|AUTENTICACION|LOGIN_OK|Inicio correcto
+05/09/2026 19:10|admin1|ANIMALES|ALTA|Animal A-001 registrado
+05/09/2026 19:11|admin1|AUTENTICACION|LOGIN_OK|Inicio correcto
+06/09/2026 21:50|admin1|AUTENTICACION|LOGIN_OK|Inicio correcto
+06/09/2026 22:22|admin1|AUTENTICACION|LOGIN_OK|Inicio de sesión correcto
+06/09/2026 22:50|admin1|AUTENTICACION|LOGIN_OK|Inicio de sesión correcto
+06/09/2026 22:52|admin1|AUTENTICACION|LOGIN_OK|Inicio de sesión correcto

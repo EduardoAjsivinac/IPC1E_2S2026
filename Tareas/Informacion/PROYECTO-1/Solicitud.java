@@ -6,8 +6,12 @@ public class Solicitud {
     String fecha;
     String estado;
 
-    public Solicitud(String codigo, String codigoAnimal,
-                     String codigoAdoptante, String fecha, String estado) {
+    public Solicitud(
+            String codigo,
+            String codigoAnimal,
+            String codigoAdoptante,
+            String fecha,
+            String estado) {
 
         this.codigo = codigo;
         this.codigoAnimal = codigoAnimal;

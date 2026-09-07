@@ -6,6 +6,7 @@ public class Adoptante {
     String telefono;
 
     public Adoptante(String codigo, String nombre, String dpi, String telefono) {
+
         this.codigo = codigo;
         this.nombre = nombre;
         this.dpi = dpi;
