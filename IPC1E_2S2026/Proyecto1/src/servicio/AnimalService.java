@@ -3,62 +3,55 @@ package IPC1E_2S2026.Proyecto1.src.servicio;
 import IPC1E_2S2026.Proyecto1.src.modelo.Animal;
 
 public class AnimalService {
-    private static final int CAPACIDAD_MAXIMA = 100;
+
     private Animal[] animales;
     private int contador;
 
     public AnimalService() {
-        this.animales = new Animal[CAPACIDAD_MAXIMA];
+        this.animales = new Animal[100];
         this.contador = 0;
     }
 
-    public boolean agregarAnimal(Animal nuevoAnimal) {
-        if (contador >= CAPACIDAD_MAXIMA) {
+    public boolean agregarAnimal(Animal animal) {
+        if (animal == null || animal.getCodigo() == null || animal.getCodigo().trim().isEmpty()) {
             return false;
         }
-        if (buscarPorCodigo(nuevoAnimal.getCodigo()) != null) {
-            return false;
-        }
-        animales[contador] = nuevoAnimal;
-        contador++;
-        return true;
-    }
 
-    public Animal buscarPorCodigo(String codigo) {
+        // Evitar duplicados por código
         for (int i = 0; i < contador; i++) {
-            if (animales[i].getCodigo().equalsIgnoreCase(codigo) && 
-                !animales[i].getEstadoAdopcion().equals("ELIMINADO")) {
-                return animales[i];
+            if (animales[i].getCodigo().equalsIgnoreCase(animal.getCodigo())) {
+                return false;
             }
         }
-        return null;
-    }
 
-    public boolean eliminarLogicamente(String codigo) {
-        Animal a = buscarPorCodigo(codigo);
-        if (a != null) {
-            a.setEstadoAdopcion("ELIMINADO");
+        if (contador < animales.length) {
+            animales[contador++] = animal;
             return true;
         }
         return false;
     }
 
-    public Animal[] getAnimalesActivos() {
-        int activosCount = 0;
+    public Animal[] getAnimales() {
+        Animal[] copia = new Animal[contador];
         for (int i = 0; i < contador; i++) {
-            if (!animales[i].getEstadoAdopcion().equals("ELIMINADO")) {
-                activosCount++;
-            }
+            copia[i] = animales[i];
         }
+        return copia;
+    }
 
-        Animal[] activos = new Animal[activosCount];
-        int idx = 0;
+    // Método solicitado por PanelAnimales y ReporteService
+    public Animal[] getAnimalesActivos() {
+        return getAnimales();
+    }
+
+    public Animal buscarPorCodigo(String codigo) {
+        if (codigo == null) return null;
         for (int i = 0; i < contador; i++) {
-            if (!animales[i].getEstadoAdopcion().equals("ELIMINADO")) {
-                activos[idx++] = animales[i];
+            if (animales[i].getCodigo().equalsIgnoreCase(codigo)) {
+                return animales[i];
             }
         }
-        return activos;
+        return null;
     }
 
     public int getContador() {
