@@ -1,0 +1,1 @@
+06/09/2026 22:52|ihsdiuh|AUTENTICACION|LOGIN_FALLIDO|Contraseña o usuario incorrecto (intento 1 de 3)
