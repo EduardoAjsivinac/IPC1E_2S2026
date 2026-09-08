@@ -1,0 +1,2 @@
+2026-09-05T11:47:37.836185|user1|login|Logueo|Login exitoso
+2026-09-05T11:47:37.838257|Auxiliar1|login|Logueo|Login exitoso
