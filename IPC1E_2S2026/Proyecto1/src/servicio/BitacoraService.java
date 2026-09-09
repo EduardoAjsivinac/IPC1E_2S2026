@@ -1,108 +1,144 @@
 package IPC1E_2S2026.Proyecto1.src.servicio;
 
-import java.io.BufferedWriter;
+import IPC1E_2S2026.Proyecto1.src.modelo.EntradaBitacora;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import IPC1E_2S2026.Proyecto1.src.modelo.BitacoraEntry;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class BitacoraService {
 
-    private BitacoraEntry[] acciones;
-    private int contadorAcciones;
+    private EntradaBitacora[] acciones;
+    private int contAcciones;
 
-    private BitacoraEntry[] errores;
-    private int contadorErrores;
+    private EntradaBitacora[] errores;
+    private int contErrores;
 
-    private final String RUTA_ACCIONES = "bitacora_acciones.txt";
-    private final String RUTA_ERRORES = "bitacora_errores.txt";
+    private static final String FILE_ACCIONES_TXT = "bitacora_acciones.txt";
+    private static final String FILE_ERRORES_TXT = "bitacora_errores.txt";
 
     public BitacoraService() {
-        this.acciones = new BitacoraEntry[500];
-        this.contadorAcciones = 0;
-
-        this.errores = new BitacoraEntry[500];
-        this.contadorErrores = 0;
+        this.acciones = new EntradaBitacora[100];
+        this.contAcciones = 0;
+        this.errores = new EntradaBitacora[100];
+        this.contErrores = 0;
     }
 
-    public void registrarAccion(String fechaHora, String usuario, String modulo, String tipoEvento, String descripcion) {
-        if (contadorAcciones < acciones.length) {
-            BitacoraEntry entrada = new BitacoraEntry(fechaHora, usuario, modulo, tipoEvento, descripcion, "", false);
-            acciones[contadorAcciones++] = entrada;
-            guardarEnArchivo(RUTA_ACCIONES, entrada.aFormatoTexto());
+    public void registrarAccion(String usuario, String modulo, String tipoEvento, String descripcion) {
+        String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        EntradaBitacora entrada = new EntradaBitacora(fechaHora, usuario, modulo, tipoEvento, descripcion);
+
+        if (contAcciones >= acciones.length) {
+            acciones = redimensionar(acciones);
         }
+        acciones[contAcciones++] = entrada;
+        escribirEnArchivo(FILE_ACCIONES_TXT, entrada.toString());
     }
 
-    public void registrarError(String fechaHora, String usuario, String modulo, String tipoEvento, String descripcion, String motivoRechazo) {
-        if (contadorErrores < errores.length) {
-            BitacoraEntry entrada = new BitacoraEntry(fechaHora, usuario, modulo, tipoEvento, descripcion, motivoRechazo, true);
-            errores[contadorErrores++] = entrada;
-            guardarEnArchivo(RUTA_ERRORES, entrada.aFormatoTexto());
+    public void registrarError(String usuario, String modulo, String tipoEvento, String motivoRechazo) {
+        String fechaHora = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        EntradaBitacora entrada = new EntradaBitacora(fechaHora, usuario, modulo, tipoEvento, motivoRechazo);
+
+        if (contErrores >= errores.length) {
+            errores = redimensionar(errores);
         }
+        errores[contErrores++] = entrada;
+        escribirEnArchivo(FILE_ERRORES_TXT, entrada.toString());
     }
 
-    private void guardarEnArchivo(String ruta, String linea) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ruta, true))) {
-            bw.write(linea);
-            bw.newLine();
+    private EntradaBitacora[] redimensionar(EntradaBitacora[] arregloOriginal) {
+        EntradaBitacora[] nuevo = new EntradaBitacora[arregloOriginal.length * 2];
+        for (int i = 0; i < arregloOriginal.length; i++) {
+            nuevo[i] = arregloOriginal[i];
+        }
+        return nuevo;
+    }
+
+    private void escribirEnArchivo(String nombreArchivo, String linea) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(nombreArchivo, true))) {
+            pw.println(linea);
         } catch (IOException e) {
-            System.err.println("Error al escribir bitácora: " + e.getMessage());
+            System.err.println("Error al escribir en " + nombreArchivo + ": " + e.getMessage());
         }
     }
 
-    public BitacoraEntry[] getRegistros() {
-        int total = contadorAcciones + contadorErrores;
-        BitacoraEntry[] todos = new BitacoraEntry[total];
-        int index = 0;
-
-        for (int i = 0; i < contadorAcciones; i++) {
-            todos[index++] = acciones[i];
-        }
-        for (int i = 0; i < contadorErrores; i++) {
-            todos[index++] = errores[i];
-        }
-
-        return todos;
+    public void generarReporteAccionesHTML() {
+        generarHTML("reporte_acciones.html", "Bitácora de Acciones", FILE_ACCIONES_TXT, "#1b5e20");
     }
 
-    public BitacoraEntry[] getAcciones() {
-        BitacoraEntry[] copia = new BitacoraEntry[contadorAcciones];
-        for (int i = 0; i < contadorAcciones; i++) copia[i] = acciones[i];
-        return copia;
+    public void generarReporteErroresHTML() {
+        generarHTML("reporte_errores.html", "Bitácora de Errores", FILE_ERRORES_TXT, "#b71c1c");
     }
 
-    public BitacoraEntry[] getErrores() {
-        BitacoraEntry[] copia = new BitacoraEntry[contadorErrores];
-        for (int i = 0; i < contadorErrores; i++) copia[i] = errores[i];
-        return copia;
-    }
+    private void generarHTML(String nombreHTML, String titulo, String archivoTxt, String colorHeader) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(nombreHTML))) {
+            pw.println("<!DOCTYPE html>");
+            pw.println("<html lang='es'>");
+            pw.println("<head><meta charset='UTF-8'><title>" + titulo + "</title>");
+            pw.println("<style>");
+            pw.println("body { font-family: Arial, sans-serif; margin: 30px; background-color: #f8f9fa; }");
+            pw.println("h1 { color: " + colorHeader + "; border-bottom: 2px solid " + colorHeader + "; padding-bottom: 10px; }");
+            pw.println("table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }");
+            pw.println("th, td { border: 1px solid #dddddd; padding: 12px; text-align: left; }");
+            pw.println("th { background-color: " + colorHeader + "; color: white; }");
+            pw.println("tr:nth-child(even) { background-color: #f2f2f2; }");
+            pw.println("</style></head><body>");
 
-    public boolean exportarHTML(String rutaSalida, String tipoFiltro) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(rutaSalida))) {
-            bw.write("<html><head><meta charset='UTF-8'><title>Reporte de Bitácora</title>");
-            bw.write("<style>table {border-collapse: collapse; width: 100%;} th, td {border: 1px solid #ddd; padding: 8px;} th {background-color: #4CAF50; color: white;}</style>");
-            bw.write("</head><body>");
-            bw.write("<h2>Reporte de Bitácora - " + tipoFiltro.toUpperCase() + "</h2>");
-            bw.write("<table><tr><th>Fecha/Hora</th><th>Usuario</th><th>Módulo</th><th>Evento</th><th>Descripción / Detalle</th></tr>");
+            pw.println("<h1>" + titulo + "</h1>");
+            pw.println("<table>");
+            pw.println("<tr><th>Fecha / Hora</th><th>Usuario</th><th>Módulo</th><th>Tipo Evento</th><th>Descripción / Motivo</th></tr>");
 
-            if (tipoFiltro.equalsIgnoreCase("ACCIONES") || tipoFiltro.equalsIgnoreCase("AMBOS")) {
-                for (int i = 0; i < contadorAcciones; i++) {
-                    BitacoraEntry b = acciones[i];
-                    bw.write("<tr><td>" + b.getFechaHora() + "</td><td>" + b.getUsuario() + "</td><td>" + b.getModulo() + "</td><td>" + b.getTipoEvento() + "</td><td>" + b.getDescripcion() + "</td></tr>");
+            File file = new File(archivoTxt);
+            if (file.exists()) {
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String linea;
+                    while ((linea = br.readLine()) != null) {
+                        String[] partes = linea.split(" \\| ");
+                        if (partes.length >= 5) {
+                            pw.println("<tr>");
+                            pw.println("<td>" + partes[0] + "</td>");
+                            pw.println("<td>" + partes[1] + "</td>");
+                            pw.println("<td>" + partes[2] + "</td>");
+                            pw.println("<td><b>" + partes[3] + "</b></td>");
+                            pw.println("<td>" + partes[4] + "</td>");
+                            pw.println("</tr>");
+                        }
+                    }
                 }
             }
 
-            if (tipoFiltro.equalsIgnoreCase("ERRORES") || tipoFiltro.equalsIgnoreCase("AMBOS")) {
-                for (int i = 0; i < contadorErrores; i++) {
-                    BitacoraEntry b = errores[i];
-                    bw.write("<tr style='background-color:#ffe6e6;'><td>" + b.getFechaHora() + "</td><td>" + b.getUsuario() + "</td><td>" + b.getModulo() + "</td><td>" + b.getTipoEvento() + "</td><td>" + b.getDescripcion() + " - Motivo: " + b.getMotivoRechazo() + "</td></tr>");
-                }
-            }
-
-            bw.write("</table></body></html>");
-            return true;
+            pw.println("</table></body></html>");
         } catch (IOException e) {
-            System.err.println("Error al exportar reporte HTML: " + e.getMessage());
-            return false;
+            System.err.println("Error al generar " + nombreHTML + ": " + e.getMessage());
         }
+    }
+
+    public EntradaBitacora[] getAcciones() {
+        return acciones;
+    }
+
+    public int getContAcciones() {
+        return contAcciones;
+    }
+
+    public EntradaBitacora[] getErrores() {
+        return errores;
+    }
+
+    public int getContErrores() {
+        return contErrores;
+    }
+
+    public EntradaBitacora[] getRegistros() {
+        return acciones;
+    }
+
+    public int getContador() {
+        return contAcciones;
     }
 }

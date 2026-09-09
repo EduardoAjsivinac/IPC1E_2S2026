@@ -7,31 +7,60 @@ public class EntradaBitacora {
     private String modulo;
     private String tipoEvento;
     private String descripcion;
-    private String motivoRechazo; // Solo para errores, opcional en acciones
-    private boolean esError;
 
-    public EntradaBitacora(String fechaHora, String usuario, String modulo, String tipoEvento, String descripcion, String motivoRechazo, boolean esError) {
+    public EntradaBitacora() {
+    }
+
+    public EntradaBitacora(String fechaHora, String usuario, String modulo, String tipoEvento, String descripcion) {
         this.fechaHora = fechaHora;
         this.usuario = usuario;
         this.modulo = modulo;
         this.tipoEvento = tipoEvento;
         this.descripcion = descripcion;
-        this.motivoRechazo = motivoRechazo;
-        this.esError = esError;
     }
 
-    public String getFechaHora() { return fechaHora; }
-    public String getUsuario() { return usuario; }
-    public String getModulo() { return modulo; }
-    public String getTipoEvento() { return tipoEvento; }
-    public String getDescripcion() { return descripcion; }
-    public String getMotivoRechazo() { return motivoRechazo; }
-    public boolean isEsError() { return esError; }
+    public String getFechaHora() {
+        return fechaHora;
+    }
 
-    public String aFormatoTexto() {
-        if (esError && motivoRechazo != null && !motivoRechazo.isEmpty()) {
-            return fechaHora + " | " + usuario + " | " + modulo + " | " + tipoEvento + " | " + descripcion + " | Motivo: " + motivoRechazo;
-        }
+    public void setFechaHora(String fechaHora) {
+        this.fechaHora = fechaHora;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+
+    public String getModulo() {
+        return modulo;
+    }
+
+    public void setModulo(String modulo) {
+        this.modulo = modulo;
+    }
+
+    public String getTipoEvento() {
+        return tipoEvento;
+    }
+
+    public void setTipoEvento(String tipoEvento) {
+        this.tipoEvento = tipoEvento;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    @Override
+    public String toString() {
         return fechaHora + " | " + usuario + " | " + modulo + " | " + tipoEvento + " | " + descripcion;
     }
 }
