@@ -1,28 +1,32 @@
 package IPC1E_2S2026.Proyecto1.src.vista;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import IPC1E_2S2026.Proyecto1.src.modelo.Animal;
 import IPC1E_2S2026.Proyecto1.src.servicio.AnimalService;
 
-public class PanelAnimales extends JPanel {
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-    private AnimalService animalService;
-    private JTable tablaAnimales;
-    private DefaultTableModel modeloTabla;
+public class PanelAnimales extends JPanel {
 
     private JTextField txtCodigo;
     private JTextField txtEspecie;
     private JTextField txtEdad;
-    private JComboBox<String> comboEstadoClinico;
-    private JComboBox<String> comboEstadoAdopcion;
+    private JComboBox<String> cbEstadoClinico;
+    private JComboBox<String> cbEstadoAdopcion;
+    private JTable tablaAnimales;
+    private DefaultTableModel modeloTabla;
+    private JButton btnRegistrar;
+
+    private AnimalService animalService;
 
     public PanelAnimales(AnimalService animalService) {
         this.animalService = animalService;
         setLayout(new BorderLayout(10, 10));
 
-        // --- Panel Formulario (Norte) ---
+        // --- PANEL SUPERIOR: FORMULARIO DE INGRESO ---
         JPanel panelFormulario = new JPanel(new GridLayout(3, 4, 10, 10));
         panelFormulario.setBorder(BorderFactory.createTitledBorder("Datos del Animal"));
 
@@ -39,63 +43,95 @@ public class PanelAnimales extends JPanel {
         panelFormulario.add(txtEdad);
 
         panelFormulario.add(new JLabel("Estado Clínico:"));
-        comboEstadoClinico = new JComboBox<>(new String[]{"APTO", "EN_TRATAMIENTO", "CUARENTENA"});
-        panelFormulario.add(comboEstadoClinico);
+        // Opciones solicitadas: EN_OBSERVACION, EN_TRATAMIENTO, APTO
+        String[] opcionesClinico = { "EN_OBSERVACION", "EN_TRATAMIENTO", "APTO" };
+        cbEstadoClinico = new JComboBox<>(opcionesClinico);
+        panelFormulario.add(cbEstadoClinico);
 
         panelFormulario.add(new JLabel("Estado Adopción:"));
-        comboEstadoAdopcion = new JComboBox<>(new String[]{"DISPONIBLE", "EN_PROCESO", "ADOPTADO"});
-        panelFormulario.add(comboEstadoAdopcion);
+        String[] opcionesAdopcion = { "DISPONIBLE", "NO_DISPONIBLE", "ADOPTADO" };
+        cbEstadoAdopcion = new JComboBox<>(opcionesAdopcion);
+        panelFormulario.add(cbEstadoAdopcion);
 
-        JButton btnAgregar = new JButton("Registrar Animal");
-        panelFormulario.add(btnAgregar);
+        btnRegistrar = new JButton("Registrar Animal");
+        panelFormulario.add(btnRegistrar);
 
         add(panelFormulario, BorderLayout.NORTH);
 
-        // --- Tabla de Datos (Centro) ---
-        String[] columnas = {"Código", "Especie", "Edad", "Estado Clínico", "Estado Adopción"};
-        modeloTabla = new DefaultTableModel(columnas, 0);
+        // --- PANEL CENTRAL: TABLA DE DATOS ---
+        String[] columnas = { "Código", "Especie", "Edad", "Estado Clínico", "Estado Adopción" };
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Hacer la tabla de solo lectura
+            }
+        };
+
         tablaAnimales = new JTable(modeloTabla);
-        add(new JScrollPane(tablaAnimales), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(tablaAnimales);
+        add(scrollPane, BorderLayout.CENTER);
 
-        // --- Evento del Botón ---
-        btnAgregar.addActionListener(e -> registrarAnimal());
+        // --- EVENTO REGISTRAR ---
+        btnRegistrar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registrarAnimal();
+            }
+        });
 
-        // Cargar registros existentes
         actualizarTabla();
     }
 
     private void registrarAnimal() {
-        try {
-            String codigo = txtCodigo.getText().trim();
-            String especie = txtEspecie.getText().trim();
-            int edad = Integer.parseInt(txtEdad.getText().trim());
-            String clinico = (String) comboEstadoClinico.getSelectedItem();
-            String adopcion = (String) comboEstadoAdopcion.getSelectedItem();
+        String codigo = txtCodigo.getText().trim();
+        String especie = txtEspecie.getText().trim();
+        String edadStr = txtEdad.getText().trim();
+        String estadoClinico = (String) cbEstadoClinico.getSelectedItem();
+        String estadoAdopcion = (String) cbEstadoAdopcion.getSelectedItem();
 
-            if (codigo.isEmpty() || especie.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor complete todos los campos.", "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
+        if (codigo.isEmpty() || especie.isEmpty() || edadStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor complete todos los campos obligatorios.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            int edad = Integer.parseInt(edadStr);
+            if (edad < 0) {
+                JOptionPane.showMessageDialog(this, "La edad no puede ser negativa.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            Animal nuevo = new Animal(codigo, especie, edad, clinico, adopcion);
-            boolean exito = animalService.agregarAnimal(nuevo);
+            Animal nuevoAnimal = new Animal(codigo, especie, edad, estadoClinico, estadoAdopcion);
+            boolean exito = animalService.agregarAnimal(nuevoAnimal);
 
             if (exito) {
-                JOptionPane.showMessageDialog(this, "Animal registrado exitosamente.");
-                limpiarCampos();
+                JOptionPane.showMessageDialog(this, "Animal registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                limpiarFormulario();
                 actualizarTabla();
             } else {
-                JOptionPane.showMessageDialog(this, "El código del animal ya existe o la capacidad está llena.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No se pudo registrar el animal (Código duplicado o espacio lleno).", "Error", JOptionPane.ERROR_MESSAGE);
             }
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "La edad debe ser un número entero válido.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "La edad debe ser un número entero válido.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void limpiarFormulario() {
+        txtCodigo.setText("");
+        txtEspecie.setText("");
+        txtEdad.setText("");
+        cbEstadoClinico.setSelectedIndex(0);
+        cbEstadoAdopcion.setSelectedIndex(0);
     }
 
     public void actualizarTabla() {
         modeloTabla.setRowCount(0); // Limpiar filas anteriores
-        Animal[] lista = animalService.getAnimalesActivos();
-        for (Animal a : lista) {
+        Animal[] animales = animalService.getAnimales();
+        int total = animalService.getContador();
+
+        for (int i = 0; i < total; i++) {
+            Animal a = animales[i];
             Object[] fila = {
                 a.getCodigo(),
                 a.getEspecie(),
@@ -105,13 +141,5 @@ public class PanelAnimales extends JPanel {
             };
             modeloTabla.addRow(fila);
         }
-    }
-
-    private void limpiarCampos() {
-        txtCodigo.setText("");
-        txtEspecie.setText("");
-        txtEdad.setText("");
-        comboEstadoClinico.setSelectedIndex(0);
-        comboEstadoAdopcion.setSelectedIndex(0);
     }
 }
