@@ -1,15 +1,18 @@
 package IPC1E_2S2026.Proyecto1.src.modelo;
 
 public class Solicitud {
+
     private String codigo;
     private String codigoAnimal;
     private String codigoAdoptante;
-    private String estado; // "PENDIENTE", "APROBADA", "RECHAZADA"
+    private String fecha;
+    private String estado;
 
-    public Solicitud(String codigo, String codigoAnimal, String codigoAdoptante, String estado) {
+    public Solicitud(String codigo, String codigoAnimal, String codigoAdoptante, String fecha, String estado) {
         this.codigo = codigo;
         this.codigoAnimal = codigoAnimal;
         this.codigoAdoptante = codigoAdoptante;
+        this.fecha = fecha;
         this.estado = estado;
     }
 
@@ -35,6 +38,14 @@ public class Solicitud {
 
     public void setCodigoAdoptante(String codigoAdoptante) {
         this.codigoAdoptante = codigoAdoptante;
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
     }
 
     public String getEstado() {

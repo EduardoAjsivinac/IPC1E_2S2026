@@ -2,17 +2,21 @@ package IPC1E_2S2026.Proyecto1.src.modelo;
 
 public class Rescate {
     private String codigo;
-    private String lugar;
+    private String prioridad;
+    private String estado;
     private String fecha;
-    private String codigoAnimal;
+    private String codigoAnimalVinculado;
 
-    public Rescate(String codigo, String lugar, String fecha, String codigoAnimal) {
+    // Constructor completo
+    public Rescate(String codigo, String prioridad, String estado, String fecha, String codigoAnimalVinculado) {
         this.codigo = codigo;
-        this.lugar = lugar;
+        this.prioridad = prioridad;
+        this.estado = estado;
         this.fecha = fecha;
-        this.codigoAnimal = codigoAnimal;
+        this.codigoAnimalVinculado = codigoAnimalVinculado;
     }
 
+    // Getters y Setters
     public String getCodigo() {
         return codigo;
     }
@@ -21,12 +25,20 @@ public class Rescate {
         this.codigo = codigo;
     }
 
-    public String getLugar() {
-        return lugar;
+    public String getPrioridad() {
+        return prioridad;
     }
 
-    public void setLugar(String lugar) {
-        this.lugar = lugar;
+    public void setPrioridad(String prioridad) {
+        this.prioridad = prioridad;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     public String getFecha() {
@@ -37,11 +49,11 @@ public class Rescate {
         this.fecha = fecha;
     }
 
-    public String getCodigoAnimal() {
-        return codigoAnimal;
+    public String getCodigoAnimalVinculado() {
+        return codigoAnimalVinculado;
     }
 
-    public void setCodigoAnimal(String codigoAnimal) {
-        this.codigoAnimal = codigoAnimal;
+    public void setCodigoAnimalVinculado(String codigoAnimalVinculado) {
+        this.codigoAnimalVinculado = codigoAnimalVinculado;
     }
 }
