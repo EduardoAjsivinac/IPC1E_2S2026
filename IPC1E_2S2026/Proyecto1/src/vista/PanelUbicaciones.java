@@ -2,6 +2,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import IPC1E_2S2026.Proyecto1.src.servicio.UbicacionService;
 
 public class PanelUbicaciones extends JPanel {
@@ -43,7 +45,12 @@ public class PanelUbicaciones extends JPanel {
         add(panelMatriz, BorderLayout.CENTER);
 
         // --- Evento del Botón ---
-        btnAsignar.addActionListener(e -> asignarUbicacion());
+        btnAsignar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                asignarUbicacion();
+            }
+        });
 
         // Dibujar estado inicial del mapa
         actualizarMapa();
@@ -82,12 +89,26 @@ public class PanelUbicaciones extends JPanel {
         for (int i = 0; i < mapa.length; i++) {
             for (int j = 0; j < mapa[i].length; j++) {
                 String val = mapa[i][j];
-                JButton btnCasilla = new JButton(val == null || val.isEmpty() ? "[" + i + "][" + j + "] Libre" : val);
                 
-                if (val != null && !val.isEmpty()) {
-                    btnCasilla.setBackground(new Color(255, 180, 180)); // Ocupado (Rojo claro)
+                // Determinar si la celda está libre
+                boolean esLibre = (val == null || val.trim().isEmpty() || val.equalsIgnoreCase("LIBRE"));
+                
+                // Texto limpio sin coordenadas cuando está libre
+                String textoBoton = esLibre ? "Libre" : val;
+                JButton btnCasilla = new JButton(textoBoton);
+                
+                // Forzar a Swing a renderizar los colores de fondo correctamente
+                btnCasilla.setOpaque(true);
+                btnCasilla.setContentAreaFilled(true);
+                btnCasilla.setBorderPainted(false);
+
+                // Asignar colores: Verde si está libre, Rojo si está ocupado
+                if (esLibre) {
+                    btnCasilla.setBackground(Color.GREEN);
+                    btnCasilla.setForeground(Color.BLACK);
                 } else {
-                    btnCasilla.setBackground(new Color(200, 255, 200)); // Libre (Verde claro)
+                    btnCasilla.setBackground(Color.RED);
+                    btnCasilla.setForeground(Color.WHITE);
                 }
                 
                 panelMatriz.add(btnCasilla);
