@@ -2,6 +2,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class LoginDialog extends JDialog {
 
@@ -42,7 +44,13 @@ public class LoginDialog extends JDialog {
         lblMensaje.setForeground(Color.RED);
         add(lblMensaje, BorderLayout.SOUTH);
 
-        btnLogin.addActionListener(e -> autenticar());
+        // Corrección: reemplazo de Lambda por Clase Anónima tradicional
+        btnLogin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                autenticar();
+            }
+        });
     }
 
     private void autenticar() {
