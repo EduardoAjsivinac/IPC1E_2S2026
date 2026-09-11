@@ -44,7 +44,7 @@ public class LoginDialog extends JDialog {
         lblMensaje.setForeground(Color.RED);
         add(lblMensaje, BorderLayout.SOUTH);
 
-        // Corrección: reemplazo de Lambda por Clase Anónima tradicional
+        
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
