@@ -3,6 +3,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import IPC1E_2S2026.Proyecto1.src.servicio.SolicitudService;
 import IPC1E_2S2026.Proyecto1.src.modelo.Solicitud;
 
@@ -58,8 +60,13 @@ public class PanelSolicitudes extends JPanel {
         tabla = new JTable(modeloTabla);
         add(new JScrollPane(tabla), BorderLayout.CENTER);
 
-        // Evento
-        btnRegistrar.addActionListener(e -> registrarSolicitud());
+        // Evento (Clase Anónima)
+        btnRegistrar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registrarSolicitud();
+            }
+        });
 
         actualizarTabla();
     }

@@ -2,6 +2,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import IPC1E_2S2026.Proyecto1.src.servicio.AnimalService;
 import IPC1E_2S2026.Proyecto1.src.servicio.AdoptanteService;
@@ -120,16 +122,27 @@ public class VentanaPrincipal extends JFrame {
         JMenuItem itemCargar = new JMenuItem("Cargar Animales desde Archivo");
         JMenuItem itemGuardar = new JMenuItem("Guardar Animales en Archivo");
 
-        itemInicio.addActionListener(e -> cardLayout.show(panelContenedor, "Bienvenida"));
-        
-        itemCargar.addActionListener(e -> {
-            cargarDatosDesdeArchivos();
-            JOptionPane.showMessageDialog(this, "Datos de animales cargados correctamente.");
+        itemInicio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Bienvenida");
+            }
         });
 
-        itemGuardar.addActionListener(e -> {
-            guardarDatosEnArchivos();
-            JOptionPane.showMessageDialog(this, "Datos de animales guardados correctamente.");
+        itemCargar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cargarDatosDesdeArchivos();
+                JOptionPane.showMessageDialog(VentanaPrincipal.this, "Datos de animales cargados correctamente.");
+            }
+        });
+
+        itemGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guardarDatosEnArchivos();
+                JOptionPane.showMessageDialog(VentanaPrincipal.this, "Datos de animales guardados correctamente.");
+            }
         });
 
         menuArchivo.add(itemInicio);
@@ -139,18 +152,47 @@ public class VentanaPrincipal extends JFrame {
 
         // Menú Módulos
         JMenu menuModulos = new JMenu("Módulos");
-        
+
         JMenuItem itemAnimales = new JMenuItem("Gestión de Animales");
         JMenuItem itemAdoptantes = new JMenuItem("Gestión de Adoptantes");
         JMenuItem itemSolicitudes = new JMenuItem("Solicitudes de Adopción");
         JMenuItem itemRescates = new JMenuItem("Rescates Urgentes");
         JMenuItem itemUbicaciones = new JMenuItem("Mapa del Refugio");
 
-        itemAnimales.addActionListener(e -> cardLayout.show(panelContenedor, "Animales"));
-        itemAdoptantes.addActionListener(e -> cardLayout.show(panelContenedor, "Adoptantes"));
-        itemSolicitudes.addActionListener(e -> cardLayout.show(panelContenedor, "Solicitudes"));
-        itemRescates.addActionListener(e -> cardLayout.show(panelContenedor, "Rescates"));
-        itemUbicaciones.addActionListener(e -> cardLayout.show(panelContenedor, "Ubicaciones"));
+        itemAnimales.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Animales");
+            }
+        });
+
+        itemAdoptantes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Adoptantes");
+            }
+        });
+
+        itemSolicitudes.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Solicitudes");
+            }
+        });
+
+        itemRescates.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Rescates");
+            }
+        });
+
+        itemUbicaciones.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(panelContenedor, "Ubicaciones");
+            }
+        });
 
         menuModulos.add(itemAnimales);
         menuModulos.add(itemAdoptantes);
@@ -161,13 +203,16 @@ public class VentanaPrincipal extends JFrame {
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         JMenuItem itemReporteGeneral = new JMenuItem("Generar Reporte HTML Animales");
-        
-        itemReporteGeneral.addActionListener(e -> {
-            boolean exito = ReporteService.generarReporteAnimales("reporte_animales.html", animalService);
-            if (exito) {
-                JOptionPane.showMessageDialog(this, "Reporte generado exitosamente: reporte_animales.html");
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al generar el reporte HTML", "Error", JOptionPane.ERROR_MESSAGE);
+
+        itemReporteGeneral.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean exito = ReporteService.generarReporteAnimales("reporte_animales.html", animalService);
+                if (exito) {
+                    JOptionPane.showMessageDialog(VentanaPrincipal.this, "Reporte generado exitosamente: reporte_animales.html");
+                } else {
+                    JOptionPane.showMessageDialog(VentanaPrincipal.this, "Error al generar el reporte HTML", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
@@ -190,16 +235,19 @@ public class VentanaPrincipal extends JFrame {
 
     // Punto de entrada principal con flujo de autenticación
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            VentanaPrincipal ventana = new VentanaPrincipal();
-            LoginDialog login = new LoginDialog(ventana);
-            login.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                VentanaPrincipal ventana = new VentanaPrincipal();
+                LoginDialog login = new LoginDialog(ventana);
+                login.setVisible(true);
 
-            if (login.isAutenticado()) {
-                ventana.setRolUsuario(login.getRolUsuario());
-                ventana.setVisible(true);
-            } else {
-                System.exit(0);
+                if (login.isAutenticado()) {
+                    ventana.setRolUsuario(login.getRolUsuario());
+                    ventana.setVisible(true);
+                } else {
+                    System.exit(0);
+                }
             }
         });
     }

@@ -3,6 +3,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import IPC1E_2S2026.Proyecto1.src.servicio.RescateService;
 import IPC1E_2S2026.Proyecto1.src.servicio.AnimalService;
 import IPC1E_2S2026.Proyecto1.src.modelo.Rescate;
@@ -58,9 +60,20 @@ public class PanelRescates extends JPanel {
         tabla = new JTable(modeloTabla);
         add(new JScrollPane(tabla), BorderLayout.CENTER);
 
-        // Eventos
-        btnGuardar.addActionListener(e -> registrarRescate());
-        btnAtender.addActionListener(e -> atenderRescate());
+        // Eventos (Clases Anónimas)
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registrarRescate();
+            }
+        });
+
+        btnAtender.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                atenderRescate();
+            }
+        });
 
         actualizarTabla();
     }

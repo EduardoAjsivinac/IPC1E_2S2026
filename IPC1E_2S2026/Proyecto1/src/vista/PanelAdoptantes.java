@@ -3,6 +3,8 @@ package IPC1E_2S2026.Proyecto1.src.vista;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import IPC1E_2S2026.Proyecto1.src.modelo.Adoptante;
 import IPC1E_2S2026.Proyecto1.src.servicio.AdoptanteService;
 
@@ -52,8 +54,13 @@ public class PanelAdoptantes extends JPanel {
         tablaAdoptantes = new JTable(modeloTabla);
         add(new JScrollPane(tablaAdoptantes), BorderLayout.CENTER);
 
-        // --- Evento del Botón ---
-        btnAgregar.addActionListener(e -> registrarAdoptante());
+        // --- Evento del Botón (Clase Anónima) ---
+        btnAgregar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registrarAdoptante();
+            }
+        });
 
         // Cargar registros existentes
         actualizarTabla();
