@@ -24,7 +24,7 @@ public class PanelSolicitudes extends JPanel {
         this.solicitudService = solicitudService;
         setLayout(new BorderLayout());
 
-        // Panel de Formulario
+        // Formulario
         JPanel panelForm = new JPanel(new GridLayout(3, 4, 8, 8));
         panelForm.setBorder(BorderFactory.createTitledBorder("Datos de la Solicitud"));
 
@@ -49,7 +49,7 @@ public class PanelSolicitudes extends JPanel {
         panelForm.add(cbEstadoInicial);
 
         JButton btnRegistrar = new JButton("Registrar Solicitud");
-        panelForm.add(new JLabel()); // Espacio de relleno
+        panelForm.add(new JLabel());
         panelForm.add(btnRegistrar);
 
         add(panelForm, BorderLayout.NORTH);
@@ -60,11 +60,24 @@ public class PanelSolicitudes extends JPanel {
         tabla = new JTable(modeloTabla);
         add(new JScrollPane(tabla), BorderLayout.CENTER);
 
-        // Evento (Clase Anónima)
+        // Botón de aprobación
+        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnAprobar = new JButton("Aprobar Solicitud Seleccionada");
+        panelAcciones.add(btnAprobar);
+        add(panelAcciones, BorderLayout.SOUTH);
+
+        // Eventos
         btnRegistrar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 registrarSolicitud();
+            }
+        });
+
+        btnAprobar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                aprobarSolicitudSeleccionada();
             }
         });
 
@@ -83,11 +96,6 @@ public class PanelSolicitudes extends JPanel {
             return;
         }
 
-        if (!fecha.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
-            JOptionPane.showMessageDialog(this, "La fecha debe tener el formato DD/MM/AAAA.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         boolean exito = solicitudService.registrarSolicitud(codSol, codAni, codAdo, fecha, estado);
         if (exito) {
             JOptionPane.showMessageDialog(this, "Solicitud registrada correctamente.");
@@ -97,11 +105,35 @@ public class PanelSolicitudes extends JPanel {
             txtFecha.setText("");
             actualizarTabla();
         } else {
-            JOptionPane.showMessageDialog(this, "No se pudo registrar la solicitud. Verifique los datos o el límite de capacidad.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al registrar la solicitud o el código ya existe.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void actualizarTabla() {
+    private void aprobarSolicitudSeleccionada() {
+        int filaSeleccionada = tabla.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar una solicitud de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String codigoSolicitud = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+        String estadoActual = (String) modeloTabla.getValueAt(filaSeleccionada, 4);
+
+        if (!"PENDIENTE".equalsIgnoreCase(estadoActual)) {
+            JOptionPane.showMessageDialog(this, "Solo se pueden aprobar solicitudes en estado PENDIENTE.", "Atención", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        boolean exito = solicitudService.aprobarSolicitud(codigoSolicitud);
+        if (exito) {
+            JOptionPane.showMessageDialog(this, "Solicitud " + codigoSolicitud + " aprobada con éxito.\nEl animal pasa a ADOPTADO y las solicitudes restantes a RECHAZADAS.");
+            actualizarTabla();
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al procesar la aprobación.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void actualizarTabla() {
         modeloTabla.setRowCount(0);
         Solicitud[] lista = solicitudService.getSolicitudes();
         if (lista != null) {

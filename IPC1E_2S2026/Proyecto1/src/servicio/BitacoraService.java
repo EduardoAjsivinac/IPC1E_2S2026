@@ -3,11 +3,15 @@ package IPC1E_2S2026.Proyecto1.src.servicio;
 import IPC1E_2S2026.Proyecto1.src.modelo.EntradaBitacora;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -60,7 +64,8 @@ public class BitacoraService {
     }
 
     private void escribirEnArchivo(String nombreArchivo, String linea) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(nombreArchivo, true))) {
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(nombreArchivo, true), StandardCharsets.UTF_8));
+             PrintWriter pw = new PrintWriter(bw)) {
             pw.println(linea);
         } catch (IOException e) {
             System.err.println("Error al escribir en " + nombreArchivo + ": " + e.getMessage());
@@ -76,7 +81,9 @@ public class BitacoraService {
     }
 
     private void generarHTML(String nombreHTML, String titulo, String archivoTxt, String colorHeader) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(nombreHTML))) {
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(nombreHTML), StandardCharsets.UTF_8));
+             PrintWriter pw = new PrintWriter(bw)) {
+            
             pw.println("<!DOCTYPE html>");
             pw.println("<html lang='es'>");
             pw.println("<head><meta charset='UTF-8'><title>" + titulo + "</title>");
@@ -95,10 +102,11 @@ public class BitacoraService {
 
             File file = new File(archivoTxt);
             if (file.exists()) {
-                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
                     String linea;
                     while ((linea = br.readLine()) != null) {
-                        String[] partes = linea.split(" \\| ");
+                        // Lee y divide la línea sin importar si hay espacios alrededor de la barra vertical
+                        String[] partes = linea.split("\\s*\\|\\s*");
                         if (partes.length >= 5) {
                             pw.println("<tr>");
                             pw.println("<td>" + partes[0] + "</td>");

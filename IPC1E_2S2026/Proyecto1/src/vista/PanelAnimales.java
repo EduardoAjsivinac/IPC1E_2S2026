@@ -19,6 +19,8 @@ public class PanelAnimales extends JPanel {
     private JTable tablaAnimales;
     private DefaultTableModel modeloTabla;
     private JButton btnRegistrar;
+    private JButton btnApto;
+    private JButton btnEliminar;
 
     private AnimalService animalService;
 
@@ -43,7 +45,6 @@ public class PanelAnimales extends JPanel {
         panelFormulario.add(txtEdad);
 
         panelFormulario.add(new JLabel("Estado Clínico:"));
-        // Opciones solicitadas: EN_OBSERVACION, EN_TRATAMIENTO, APTO
         String[] opcionesClinico = { "EN_OBSERVACION", "EN_TRATAMIENTO", "APTO" };
         cbEstadoClinico = new JComboBox<>(opcionesClinico);
         panelFormulario.add(cbEstadoClinico);
@@ -71,11 +72,34 @@ public class PanelAnimales extends JPanel {
         JScrollPane scrollPane = new JScrollPane(tablaAnimales);
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- EVENTO REGISTRAR ---
+        // --- PANEL INFERIOR: BOTONES DE ACCIÓN (Apto y Eliminar) ---
+        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnApto = new JButton("Cambiar a APTO");
+        btnEliminar = new JButton("Eliminar Animal");
+
+        panelAcciones.add(btnApto);
+        panelAcciones.add(btnEliminar);
+        add(panelAcciones, BorderLayout.SOUTH);
+
+        // --- EVENTOS ---
         btnRegistrar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 registrarAnimal();
+            }
+        });
+
+        btnApto.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cambiarEstadoApto();
+            }
+        });
+
+        btnEliminar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                eliminarAnimalSeleccionado();
             }
         });
 
@@ -114,6 +138,42 @@ public class PanelAnimales extends JPanel {
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "La edad debe ser un número entero válido.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void cambiarEstadoApto() {
+        int filaSeleccionada = tablaAnimales.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un animal de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String codigo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+        boolean exito = animalService.actualizarEstadoClinico(codigo, "APTO");
+
+        if (exito) {
+            JOptionPane.showMessageDialog(this, "El animal " + codigo + " ahora está APTO y DISPONIBLE.");
+            actualizarTabla();
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo actualizar el estado.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void eliminarAnimalSeleccionado() {
+        int filaSeleccionada = tablaAnimales.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un animal de la tabla.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String codigo = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+        boolean exito = animalService.eliminarAnimal(codigo);
+
+        if (exito) {
+            JOptionPane.showMessageDialog(this, "Animal eliminado y celda liberada automáticamente.");
+            actualizarTabla();
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al eliminar el animal.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

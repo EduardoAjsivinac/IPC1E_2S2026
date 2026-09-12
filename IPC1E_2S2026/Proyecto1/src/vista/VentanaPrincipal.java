@@ -4,12 +4,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import IPC1E_2S2026.Proyecto1.src.servicio.AnimalService;
 import IPC1E_2S2026.Proyecto1.src.servicio.AdoptanteService;
 import IPC1E_2S2026.Proyecto1.src.servicio.SolicitudService;
 import IPC1E_2S2026.Proyecto1.src.servicio.RescateService;
 import IPC1E_2S2026.Proyecto1.src.servicio.UbicacionService;
+import IPC1E_2S2026.Proyecto1.src.servicio.BitacoraService;
 import IPC1E_2S2026.Proyecto1.src.servicio.ReporteService;
 import IPC1E_2S2026.Proyecto1.src.persistencia.ArchivoManager;
 
@@ -24,6 +27,14 @@ public class VentanaPrincipal extends JFrame {
     private SolicitudService solicitudService;
     private RescateService rescateService;
     private UbicacionService ubicacionService;
+    private BitacoraService bitacoraService;
+
+    // Paneles
+    private PanelAnimales panelAnimales;
+    private PanelAdoptantes panelAdoptantes;
+    private PanelSolicitudes panelSolicitudes;
+    private PanelRescates panelRescates;
+    private PanelUbicaciones panelUbicaciones;
 
     // Rol de sesión activa
     private String rolUsuario = "";
@@ -34,10 +45,14 @@ public class VentanaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Inicialización de servicios backend
+        // 1. Inicialización de servicios backend
         this.animalService = new AnimalService();
         this.adoptanteService = new AdoptanteService();
-        this.solicitudService = new SolicitudService();
+        this.bitacoraService = new BitacoraService();
+        
+        // SolicitudService recibe la misma instancia de AnimalService y BitacoraService
+        this.solicitudService = new SolicitudService(this.animalService, this.bitacoraService);
+        
         this.rescateService = new RescateService();
         this.ubicacionService = new UbicacionService(5, 5);
 
@@ -51,20 +66,20 @@ public class VentanaPrincipal extends JFrame {
         // Panel de Bienvenida
         JPanel panelBienvenida = crearPanelBienvenida();
 
-        // Vistas/Paneles
-        PanelAnimales panelAnimales = new PanelAnimales(animalService);
-        PanelAdoptantes panelAdoptantes = new PanelAdoptantes(adoptanteService);
-        PanelSolicitudes panelSolicitudes = new PanelSolicitudes(solicitudService);
-        PanelRescates panelRescates = new PanelRescates(rescateService, animalService);
-        PanelUbicaciones panelUbicaciones = new PanelUbicaciones(ubicacionService);
+        // 2. Inicializar Paneles
+        this.panelAnimales = new PanelAnimales(this.animalService);
+        this.panelAdoptantes = new PanelAdoptantes(this.adoptanteService);
+        this.panelSolicitudes = new PanelSolicitudes(this.solicitudService);
+        this.panelRescates = new PanelRescates(this.rescateService, this.animalService);
+        this.panelUbicaciones = new PanelUbicaciones(this.ubicacionService);
 
         // Agregar paneles al contenedor principal
         panelContenedor.add(panelBienvenida, "Bienvenida");
-        panelContenedor.add(panelAnimales, "Animales");
-        panelContenedor.add(panelAdoptantes, "Adoptantes");
-        panelContenedor.add(panelSolicitudes, "Solicitudes");
-        panelContenedor.add(panelRescates, "Rescates");
-        panelContenedor.add(panelUbicaciones, "Ubicaciones");
+        panelContenedor.add(this.panelAnimales, "Animales");
+        panelContenedor.add(this.panelAdoptantes, "Adoptantes");
+        panelContenedor.add(this.panelSolicitudes, "Solicitudes");
+        panelContenedor.add(this.panelRescates, "Rescates");
+        panelContenedor.add(this.panelUbicaciones, "Ubicaciones");
 
         add(panelContenedor, BorderLayout.CENTER);
 
@@ -72,9 +87,9 @@ public class VentanaPrincipal extends JFrame {
         crearBarraMenu();
 
         // Guardar automáticamente datos al cerrar la ventana
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 guardarDatosEnArchivos();
             }
         });
@@ -116,7 +131,7 @@ public class VentanaPrincipal extends JFrame {
     private void crearBarraMenu() {
         JMenuBar menuBar = new JMenuBar();
 
-        // Menú Archivo (Cargar / Guardar / Inicio)
+        // Menú Archivo
         JMenu menuArchivo = new JMenu("Archivo");
         JMenuItem itemInicio = new JMenuItem("Inicio / Bienvenida");
         JMenuItem itemCargar = new JMenuItem("Cargar Animales desde Archivo");
@@ -133,6 +148,7 @@ public class VentanaPrincipal extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cargarDatosDesdeArchivos();
+                panelAnimales.actualizarTabla();
                 JOptionPane.showMessageDialog(VentanaPrincipal.this, "Datos de animales cargados correctamente.");
             }
         });
@@ -162,6 +178,7 @@ public class VentanaPrincipal extends JFrame {
         itemAnimales.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                panelAnimales.actualizarTabla();
                 cardLayout.show(panelContenedor, "Animales");
             }
         });
@@ -176,6 +193,7 @@ public class VentanaPrincipal extends JFrame {
         itemSolicitudes.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                panelSolicitudes.actualizarTabla();
                 cardLayout.show(panelContenedor, "Solicitudes");
             }
         });
@@ -203,6 +221,7 @@ public class VentanaPrincipal extends JFrame {
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         JMenuItem itemReporteGeneral = new JMenuItem("Generar Reporte HTML Animales");
+        JMenuItem itemReporteBitacora = new JMenuItem("Generar Reportes de Bitácora");
 
         itemReporteGeneral.addActionListener(new ActionListener() {
             @Override
@@ -216,7 +235,20 @@ public class VentanaPrincipal extends JFrame {
             }
         });
 
+        itemReporteBitacora.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ReporteService reporteService = new ReporteService(bitacoraService);
+                reporteService.generarReportesBitacora();
+                JOptionPane.showMessageDialog(VentanaPrincipal.this, 
+                    "¡Reportes HTML de Acciones y Errores generados con éxito!", 
+                    "Bitácora", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
         menuReportes.add(itemReporteGeneral);
+        menuReportes.add(itemReporteBitacora);
 
         menuBar.add(menuArchivo);
         menuBar.add(menuModulos);
@@ -233,7 +265,6 @@ public class VentanaPrincipal extends JFrame {
         ArchivoManager.guardarAnimales("animales.txt", animalService);
     }
 
-    // Punto de entrada principal con flujo de autenticación
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

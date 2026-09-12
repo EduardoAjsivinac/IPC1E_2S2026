@@ -6,10 +6,20 @@ public class AnimalService {
 
     private Animal[] animales;
     private int contador;
+    private UbicacionService ubicacionService;
+    private BitacoraService bitacoraService;
 
     public AnimalService() {
         this.animales = new Animal[100];
         this.contador = 0;
+    }
+
+    public void setUbicacionService(UbicacionService ubicacionService) {
+        this.ubicacionService = ubicacionService;
+    }
+
+    public void setBitacoraService(BitacoraService bitacoraService) {
+        this.bitacoraService = bitacoraService;
     }
 
     public boolean agregarAnimal(Animal animal) {
@@ -17,7 +27,6 @@ public class AnimalService {
             return false;
         }
 
-        // Evitar duplicados por código
         for (int i = 0; i < contador; i++) {
             if (animales[i].getCodigo().equalsIgnoreCase(animal.getCodigo())) {
                 return false;
@@ -31,6 +40,45 @@ public class AnimalService {
         return false;
     }
 
+    public boolean actualizarEstadoClinico(String codigo, String nuevoEstadoClinico) {
+        Animal animal = buscarPorCodigo(codigo);
+        if (animal == null) {
+            return false;
+        }
+
+        animal.setEstadoClinico(nuevoEstadoClinico);
+
+        if ("APTO".equalsIgnoreCase(nuevoEstadoClinico)) {
+            animal.setEstadoAdopcion("DISPONIBLE");
+        } else {
+            animal.setEstadoAdopcion("NO_DISPONIBLE");
+        }
+
+        return true;
+    }
+
+    public boolean eliminarAnimal(String codigo) {
+        int index = -1;
+        for (int i = 0; i < contador; i++) {
+            if (animales[i].getCodigo().equalsIgnoreCase(codigo)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return false;
+        }
+
+        for (int i = index; i < contador - 1; i++) {
+            animales[i] = animales[i + 1];
+        }
+        animales[contador - 1] = null;
+        contador--;
+
+        return true;
+    }
+
     public Animal[] getAnimales() {
         Animal[] copia = new Animal[contador];
         for (int i = 0; i < contador; i++) {
@@ -39,7 +87,6 @@ public class AnimalService {
         return copia;
     }
 
-    // Método solicitado por PanelAnimales y ReporteService
     public Animal[] getAnimalesActivos() {
         return getAnimales();
     }
