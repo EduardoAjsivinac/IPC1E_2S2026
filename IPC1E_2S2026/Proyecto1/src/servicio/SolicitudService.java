@@ -8,7 +8,7 @@ public class SolicitudService {
     private Solicitud[] solicitudes;
     private int contador;
     private AnimalService animalService;
-    private BitacoraService bitacoraService;
+    // private BitacoraService bitacoraService;
 
     public SolicitudService() {
         this.solicitudes = new Solicitud[100];
@@ -19,7 +19,7 @@ public class SolicitudService {
         this.solicitudes = new Solicitud[100];
         this.contador = 0;
         this.animalService = animalService;
-        this.bitacoraService = bitacoraService;
+        // this.bitacoraService = bitacoraService;
     }
 
     public void setAnimalService(AnimalService animalService) {
@@ -27,7 +27,7 @@ public class SolicitudService {
     }
 
     public void setBitacoraService(BitacoraService bitacoraService) {
-        this.bitacoraService = bitacoraService;
+        // this.bitacoraService = bitacoraService;
     }
 
     public boolean registrarSolicitud(String codigo, String codigoAnimal, String codigoAdoptante, String fecha, String estado) {

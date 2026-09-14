@@ -6,8 +6,8 @@ public class AnimalService {
 
     private Animal[] animales;
     private int contador;
-    private UbicacionService ubicacionService;
-    private BitacoraService bitacoraService;
+    // private UbicacionService ubicacionService;
+    // private BitacoraService bitacoraService;
 
     public AnimalService() {
         this.animales = new Animal[100];
@@ -15,11 +15,11 @@ public class AnimalService {
     }
 
     public void setUbicacionService(UbicacionService ubicacionService) {
-        this.ubicacionService = ubicacionService;
+        // this.ubicacionService = ubicacionService;
     }
 
     public void setBitacoraService(BitacoraService bitacoraService) {
-        this.bitacoraService = bitacoraService;
+        // this.bitacoraService = bitacoraService;
     }
 
     public boolean agregarAnimal(Animal animal) {
