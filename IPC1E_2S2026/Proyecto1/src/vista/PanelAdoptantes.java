@@ -92,14 +92,18 @@ public class PanelAdoptantes extends JPanel {
     public void actualizarTabla() {
         modeloTabla.setRowCount(0);
         Adoptante[] lista = adoptanteService.getAdoptantes();
-        for (Adoptante a : lista) {
-            Object[] fila = {
-                a.getCodigo(),
-                a.getNombre(),
-                a.getDpi(),
-                a.getTelefono()
-            };
-            modeloTabla.addRow(fila);
+        if (lista != null) {
+            for (Adoptante a : lista) {
+                if (a != null) { // Protección contra posiciones vacías
+                    Object[] fila = {
+                        a.getCodigo(),
+                        a.getNombre(),
+                        a.getDpi(),
+                        a.getTelefono()
+                    };
+                    modeloTabla.addRow(fila);
+                }
+            }
         }
     }
 
